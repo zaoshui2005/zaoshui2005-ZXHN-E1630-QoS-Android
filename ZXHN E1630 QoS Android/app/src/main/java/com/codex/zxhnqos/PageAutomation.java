@@ -1,0 +1,51 @@
+package com.codex.zxhnqos;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+final class PageAutomation {
+    static String script(String user, String pass, String target, int nav, boolean verify, JSONArray before) {
+        return "(function(){try{" +
+            "var user=" + q(user) + ",pass=" + q(pass) + ",target=" + q(target) + ",nav=" + nav + ",verify=" + verify + ",before=" + before.toString() + ";" +
+            "function result(s,m,extra){var r={state:s,message:m,navigation:nav};if(extra)for(var k in extra)r[k]=extra[k];return JSON.stringify(r);}" +
+            "var docs=[];function walk(d){if(docs.indexOf(d)>=0)return;docs.push(d);var fs=d.querySelectorAll('iframe,frame');for(var i=0;i<fs.length;i++)try{if(fs[i].contentDocument)walk(fs[i].contentDocument);}catch(ignore){}}walk(document);" +
+            "function all(sel,root){var out=[];var ds=root?[root]:docs;for(var j=0;j<ds.length;j++){var a=ds[j].querySelectorAll(sel);for(var i=0;i<a.length;i++)out.push(a[i]);}return out;}" +
+            "function vis(e){if(!e)return false;var r=e.getBoundingClientRect(),w=e.ownerDocument.defaultView,s=w.getComputedStyle(e);if(!r.width||!r.height||s.visibility==='hidden'||s.display==='none')return false;try{if(w.frameElement&&!vis(w.frameElement))return false;}catch(ignore){}return true;}" +
+            "function text(e){return String(e.innerText||e.textContent||'').replace(/\\s+/g,'').replace(/[:：]$/,'');}" +
+            "function enabled(e){return vis(e)&&!e.disabled&&!e.readOnly;}" +
+            "function editable(e){return enabled(e)&&e.tagName==='INPUT'&&/^(text|number|tel|password|search|email|url)$/.test(e.type);}" +
+            "function first(sel,predicate,root){var a=all(sel,root);for(var i=0;i<a.length;i++)if(predicate(a[i]))return a[i];return null;}" +
+            "function exact(t,root){var a=all('a,button,input,div,span,li,label,td,p,h1,h2,h3',root),best=null;for(var i=0;i<a.length;i++){var e=a[i];if(vis(e)&&(text(e)===t||e.value===t)){if(!best||e.querySelectorAll('*').length<best.querySelectorAll('*').length)best=e;}}return best;}" +
+            "function set(e,v){var w=e.ownerDocument.defaultView,d=Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value');e.focus();if(d&&d.set)d.set.call(e,v);else e.value=v;e.dispatchEvent(new w.Event('input',{bubbles:true}));e.dispatchEvent(new w.Event('change',{bubbles:true}));e.blur();}" +
+            "function click(e){e.scrollIntoView({block:'center'});e.click();}" +
+            "function scrollTopRight(e){var d=e&&e.ownerDocument?e.ownerDocument:document,w=d.defaultView||window;try{var de=d.documentElement,b=d.body||de;var max=Math.max(de.scrollWidth||0,b.scrollWidth||0,(w.innerWidth||0));w.scrollTo(0,0);w.scrollTo(Math.max(0,max-(w.innerWidth||0)),0);}catch(ignore){}var n=e;while(n&&n!==d.body&&n!==d.documentElement){try{if(n.scrollHeight>n.clientHeight)n.scrollTop=0;if(n.scrollWidth>n.clientWidth)n.scrollLeft=n.scrollWidth;}catch(ignore){}n=n.parentElement;}try{e.scrollIntoView({block:'start',inline:'end'});}catch(ignore){try{e.scrollIntoView(true);}catch(ignore2){}}}" +
+            "function clickLogout(e){scrollTopRight(e);try{e.focus();}catch(ignore){}e.click();}" +
+            "function wait(m){return result('wait',m);}" +
+            "if(exact('正在登录中')||exact('正在加载')||exact('正在请求中')||exact('请稍等'))return wait('路由器正在处理，请稍等…');" +
+            "var loginPageButton=exact('登录');var p=first('input.login-input-password,input[type=password],input[id*=Password],input[name*=Password],input[placeholder*=管理密码]',function(e){return editable(e)&&(loginPageButton||e.classList.contains('login-input-password'));});if(p&&(nav&64))return result('done','已验证保存成功并退出路由器');" +
+            "if(p&&!(nav&64)){if(nav&1){var errors=['用户名或密码错误','用户名或密码不正确','密码错误','登录失败'];for(var ei=0;ei<errors.length;ei++)if(exact(errors[ei]))return result('error','路由器提示登录失败，请检查已保存的账号和密码。');return wait('已点击登录，等待路由器响应；若页面不变，请检查账号密码…');}" +
+            "var brand='';for(var bi=0;bi<docs.length;bi++)brand+=docs[bi].body?docs[bi].body.innerText:'';if(!/ZXHN\\s*E1630/i.test(brand))return result('error','未识别为 ZXHN E1630 登录页面，已停止填写密码。请检查路由器地址。');" +
+            "var d=p.ownerDocument,u=first('input.login-input-manageNum,input[name=Frm_Username],input[name=username],input[placeholder*=用户名]',function(e){return editable(e)&&e!==p;},d)||first('input[type=text]',function(e){return editable(e)&&e!==p;},d);" +
+            "var login=first('button.login-btn,input.login-btn,#Login,#LoginId,#btnLogin,input[type=submit],button[type=submit],input[value=登录]',enabled,d)||exact('登录',d);" +
+            "if(!u||!login)return wait('等待可见的用户名框、密码框和登录按钮…');set(u,user);set(p,pass);nav|=1;click(login);return result('progress','已填写账号密码并点击登录，等待页面加载…');}" +
+            "if(!(nav&2)){var advanced=first('#vue-venus,#vue-venus-mobile',enabled)||exact('进入高级配置')||exact('高级配置');if(advanced){nav|=2;click(advanced);return result('progress','正在进入高级配置（电脑模式）…');}if(nav&128)return wait('头像菜单已打开，等待进入高级配置按钮…');var avatar=first('#anthor',enabled)||first('img',function(e){if(!vis(e))return false;var r=e.getBoundingClientRect(),w=e.ownerDocument.documentElement.clientWidth||e.ownerDocument.defaultView.innerWidth||480;return r.top<430&&r.left>w*0.65;});if(avatar){var owner=avatar.closest?avatar.closest('.el-dropdown-link'):null;if(!owner)owner=avatar;nav|=128;click(owner);return result('progress','已点击右上角头像，等待高级配置选项…');}return wait('登录已完成，正在等待桌面版高级配置按钮…');}" +
+            "var ruleName='JER-TN10',anchors=all('input,div,span,a,td,li,h1,h2,h3,label').filter(function(e){return vis(e)&&(e.value===ruleName||text(e)===ruleName);});" +
+            "function uploadField(box){var labels=all('label,td,span,div,p',box).filter(function(e){return vis(e)&&/^上传最大带宽(?:\\(Mbps\\)|（Mbps）)?$/i.test(text(e));});for(var li=0;li<labels.length;li++){var label=labels[li];if(label.tagName==='LABEL'&&label.htmlFor){var linked=label.ownerDocument.getElementById(label.htmlFor);if(linked&&box.contains(linked)&&editable(linked))return linked;}var row=label;while(row&&box.contains(row)){var ins=all('input',row).filter(editable);if(ins.length===1)return ins[0];if(ins.length>1)break;if(row===box)break;row=row.parentElement;}}return null;}" +
+            "function submit(box){return first('input[type=button],input[type=submit],button,a',function(e){return enabled(e)&&(e.value==='提交'||text(e)==='提交'||text(e)==='保存');},box);}" +
+            "var box=null,up=null;for(var ai=0;ai<anchors.length&&!box;ai++){var parent=anchors[ai].parentElement;while(parent&&parent!==parent.ownerDocument.body){var af=uploadField(parent);if(af&&submit(parent)){var labelCount=all('label,td,span,div,p',parent).filter(function(e){return vis(e)&&/^上传最大带宽(?:\\(Mbps\\)|（Mbps）)?$/i.test(text(e))&&!e.querySelector('label,td,span,div,p');}).length;var ruleInputs=all('input',parent).filter(function(e){return editable(e)&&/^JER-|TN10/.test(e.value);});if(labelCount<=1&&ruleInputs.length<=1){box=parent;up=af;break;}}parent=parent.parentElement;}}" +
+            "if(box&&up){if(/Kbps|kb.s/i.test(box.innerText||''))return result('error','规则页面显示的单位不是 Mbps，已停止修改。');" +
+            "var fields=all('input,select',box).filter(function(e){return vis(e)&&e!==up&&!/^(button|submit|hidden|reset)$/.test(e.type);});" +
+            "function snapshot(){return fields.map(function(e,i){return {key:e.id||e.name||('index:'+i),value:e.value,checked:/^(checkbox|radio)$/.test(e.type)?e.checked:null};});}" +
+            "if(verify){if(Number(up.value)!==Number(target))return result('error','重新读取后的上传带宽为 '+up.value+' Mbps，与目标 '+target+' 不一致，提交未生效。');var after=snapshot();for(var pi=0;pi<before.length;pi++){var found=after.filter(function(e){return e.key===before[pi].key;});if(found.length!==1||found[0].value!==before[pi].value||found[0].checked!==before[pi].checked)return result('error','上传值已读取，但规则其他字段发生变化，请检查当前页面。');}var logout=first('#vue-out,#vue-out-mobile',enabled)||exact('注销')||first('a,button,div,span',function(e){return vis(e)&&/注销|退出登录|退出/.test(text(e));});if(logout){nav|=64;clickLogout(logout);return result('loggedout','已验证保存成功，页面已滚到右上角，正在注销路由器…');}return result('done','已验证保存成功，但页面没有找到注销按钮');}" +
+            "if(Number(up.value)===Number(target)){if(!verify){var out=first('#vue-out,#vue-out-mobile',enabled)||exact('注销')||first('a,button,div,span',function(e){return vis(e)&&/注销|退出登录|退出/.test(text(e));});if(out){nav|=64;clickLogout(out);return result('loggedout','当前值已经是目标值，页面已滚到右上角，正在注销路由器');}}return result('done','当前上传带宽已是目标值，无需修改');}var btn=submit(box);if(!btn)return wait('已找到上传带宽，等待 JER-TN10 规则内的提交按钮；尚未修改…');var old=snapshot();set(up,target);if(Number(up.value)!==Number(target))return result('error','上传输入框未接受目标数值。');var fresh=snapshot();if(JSON.stringify(old)!==JSON.stringify(fresh))return result('error','网页联动改变了其他字段，已停止提交，请检查页面。');click(btn);return result('submitted','已提交，正在重新打开页面确认保存结果…',{preserved:old});}" +
+            "if(nav&64){var loginAgain=first('input.login-input-password,input[type=password]',editable);if(loginAgain)return result('done','已验证保存成功并退出路由器');return wait('正在注销路由器…');}" +
+            "if(anchors.length&&!(nav&32)){var row=first('.collapsibleInst',function(e){return vis(e)&&text(e).indexOf(ruleName)>=0;})||anchors.filter(function(e){return e.tagName!=='INPUT';})[0];if(row){var cls=(' '+(row.className||'')+' ').toLowerCase();if(!/instnameexp/.test(cls)){click(row);return result('progress','正在展开 JER-TN10 规则行…');}nav|=32;return wait('JER-TN10 规则已展开，等待上传带宽输入框…');}}" +
+            "var rules=exact('带宽限速规则');if(rules&&!(nav&16)){nav|=16;click(rules);return result('progress','正在打开带宽限速规则…');}" +
+            "var qos=exact('QoS')||exact('QOS');if(qos&&!(nav&8)){nav|=8;click(qos);return result('progress','正在打开 QoS…');}" +
+            "var apps=exact('应用功能');if(apps&&!(nav&4)){nav|=4;click(apps);return result('progress','正在打开应用功能…');}" +
+            "var advanced=exact('进入高级配置')||exact('高级配置');if(advanced&&!(nav&2)){nav|=2;click(advanced);return result('progress','正在进入高级配置…');}" +
+            "return wait(anchors.length?'等待 JER-TN10 的上传最大带宽输入框…':'等待高级配置 / 应用功能 / QoS / 带宽限速规则页面…');" +
+            "}catch(e){return JSON.stringify({state:'error',message:'网页自动操作异常：'+String(e.message||e)});}})()";
+    }
+    private static String q(String value) { return JSONObject.quote(value == null ? "" : value); }
+}
