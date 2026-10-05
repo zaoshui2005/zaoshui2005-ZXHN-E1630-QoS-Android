@@ -198,6 +198,7 @@ final class RouterAutomation {
                 if ("done".equals(type)) { finish(true, "已读取确认并退出路由器：JER-TN10 上传 " + upload + " Mbps。"); return; }
                 if ("loggedout".equals(type)) { show(message); schedule(1200); return; }
                 if ("logoutdelay".equals(type)) { show(message); schedule(3000); return; }
+                if ("logoutscroll".equals(type)) { show(message); schedule(1200); return; }
                 show(message);
                 if ("submitted".equals(type)) {
                     preserved = result.optJSONArray("preserved");
