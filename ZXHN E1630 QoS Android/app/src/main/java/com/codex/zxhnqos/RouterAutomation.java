@@ -172,6 +172,14 @@ final class RouterAutomation {
         handler.removeCallbacks(tick);
         if (!stopped && !awaitingReload) handler.postDelayed(tick, delay);
     }
+    private void forceWebViewTopRight() {
+        web.post(() -> {
+            if (stopped) return;
+            web.pageUp(true);
+            web.scrollTo(100000, 0);
+            web.invalidate();
+        });
+    }
     private void runStep() {
         if (stopped || awaitingReload) return;
         if (SystemClock.elapsedRealtime() > deadline) {
@@ -198,7 +206,7 @@ final class RouterAutomation {
                 if ("done".equals(type)) { finish(true, "已读取确认并退出路由器：JER-TN10 上传 " + upload + " Mbps。"); return; }
                 if ("loggedout".equals(type)) { show(message); schedule(1200); return; }
                 if ("logoutdelay".equals(type)) { show(message); schedule(3000); return; }
-                if ("logoutscroll".equals(type)) { show(message); schedule(1200); return; }
+                if ("logoutscroll".equals(type)) { show(message); forceWebViewTopRight(); schedule(2000); return; }
                 show(message);
                 if ("submitted".equals(type)) {
                     preserved = result.optJSONArray("preserved");
