@@ -3,12 +3,13 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GRADLE_PROJECT_DIR: ZXHN E1630 QoS Android
 
     steps:
       - name: Checkout
@@ -30,44 +31,25 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Find Gradle project
+      - name: Verify v1.5 project
         shell: bash
         run: |
           set -euo pipefail
+          test -f "$GRADLE_PROJECT_DIR/settings.gradle"
+          grep -Eq "versionName[[:space:]]+['\"]1\.5['\"]" "$GRADLE_PROJECT_DIR/app/build.gradle"
+          echo "Confirmed Android project version 1.5"
 
-          settings_file="$(find . -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
-
-          if [[ -z "$settings_file" ]]; then
-            echo "找不到 settings.gradle"
-            find . -maxdepth 4 -type f -name "settings.gradle*" -print
-            exit 1
-          fi
-
-          project_dir="$(dirname "$settings_file")"
-          project_dir="${project_dir#./}"
-
-          if [[ "$project_dir" == "" ]]; then
-            project_dir="."
-          fi
-
-          echo "GRADLE_PROJECT_DIR=$project_dir" >> "$GITHUB_ENV"
-          echo "Gradle 工程目录：$project_dir"
-
-      - name: Build debug APK
+      - name: Build v1.5 debug APK
         shell: bash
-        run: |
-          gradle -p "$GRADLE_PROJECT_DIR" assembleDebug --stacktrace
+        run: gradle -p "$GRADLE_PROJECT_DIR" clean assembleDebug --stacktrace
 
-      - name: Check APK
+      - name: Check APK exists
         shell: bash
-        run: |
-          set -euo pipefail
-          apk="$GRADLE_PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
-          test -f "$apk"
-          echo "APK 已生成：$apk"
+        run: test -f "$GRADLE_PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
 
-      - name: Upload APK
+      - name: Upload v1.5 APK
         uses: actions/upload-artifact@v4
         with:
-          name: zxhn-e1630-qos-v1.3-debug-apk
-          path: '**/app/build/outputs/apk/debug/app-debug.apk'
+          name: zxhn-e1630-qos-v1.5-debug-apk
+          path: 'ZXHN E1630 QoS Android/app/build/outputs/apk/debug/app-debug.apk'
+          if-no-files-found: error
