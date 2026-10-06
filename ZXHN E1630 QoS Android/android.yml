@@ -31,15 +31,15 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Verify v1.9 project
+      - name: Verify v2.0 project
         shell: bash
         run: |
           set -euo pipefail
           test -f "$GRADLE_PROJECT_DIR/settings.gradle"
-          grep -Eq "versionName[[:space:]]+['\"]1\.9['\"]" "$GRADLE_PROJECT_DIR/app/build.gradle"
-          echo "Confirmed Android project version 1.9"
+          grep -Eq "versionName[[:space:]]+['\"]2\.0['\"]" "$GRADLE_PROJECT_DIR/app/build.gradle"
+          echo "Confirmed Android project version 2.0"
 
-      - name: Build v1.9 debug APK
+      - name: Build v2.0 debug APK
         shell: bash
         run: gradle -p "$GRADLE_PROJECT_DIR" clean assembleDebug --stacktrace
 
@@ -47,9 +47,9 @@ jobs:
         shell: bash
         run: test -f "$GRADLE_PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
 
-      - name: Upload v1.9 APK
+      - name: Upload v2.0 APK
         uses: actions/upload-artifact@v4
         with:
-          name: zxhn-e1630-qos-v1.9-debug-apk
+          name: zxhn-e1630-qos-v2.0-debug-apk
           path: 'ZXHN E1630 QoS Android/app/build/outputs/apk/debug/app-debug.apk'
           if-no-files-found: error
