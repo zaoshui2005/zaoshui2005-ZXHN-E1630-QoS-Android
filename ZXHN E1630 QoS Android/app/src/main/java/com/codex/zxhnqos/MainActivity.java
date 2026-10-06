@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
     private JSONObject point(String time, String upload, boolean enabled) { JSONObject p = new JSONObject(); try { p.put("time", time); p.put("upload", upload); p.put("enabled", enabled); } catch (Exception ignored) { } return p; }
     private void build() {
         ScrollView scroll = new ScrollView(this); LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(28, 24, 28, 24); scroll.addView(root);
-        TextView title = new TextView(this); title.setText("ZXHN E1630 QoS 定时限速  v2.0（高级模式识别）"); title.setTextSize(22); root.addView(title);
+        TextView title = new TextView(this); title.setText("ZXHN E1630 QoS 定时限速  v2.1（右上角注销）"); title.setTextSize(22); root.addView(title);
         root.addView(label("Wi-Fi 设置")); ssid = field("目标 SSID", getSharedPreferences("settings", 0).getString("ssid", "ChinaNet-kydAhx-5G")); root.addView(ssid);
         wifiPassword = field("Wi-Fi 密码（用于系统连接请求）", secrets.get("wifi_password")); wifiPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD); root.addView(wifiPassword);
         routerUrl = field("路由器地址", getSharedPreferences("settings", 0).getString("router", "http://router.ctc/")); root.addView(routerUrl);

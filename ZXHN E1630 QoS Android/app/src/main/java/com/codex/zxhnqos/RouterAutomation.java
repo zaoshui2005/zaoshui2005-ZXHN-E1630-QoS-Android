@@ -196,7 +196,7 @@ final class RouterAutomation {
                 String message = result.optString("message", "等待网页响应…");
                 if ("error".equals(type)) { finish(false, message); return; }
                 if ("done".equals(type)) { finish(true, "已读取确认并退出路由器：JER-TN10 上传 " + upload + " Mbps。"); return; }
-                if ("loggedout".equals(type)) { show(message); schedule(1200); return; }
+                if ("loggedout".equals(type)) { show(message); schedule(2000); return; }
                 if ("logoutdelay".equals(type)) { show(message); schedule(3000); return; }
                 show(message);
                 if ("submitted".equals(type)) {
